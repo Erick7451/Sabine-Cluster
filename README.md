@@ -102,10 +102,22 @@ drwxr-xr-x 2 eeplater kakadiaris    6 Jun 25 11:02 scr
 -rw-r--r-- 1 eeplater kakadiaris   48 Jul 11 20:43 startup.sh
 -rw-r--r-- 1 eeplater kakadiaris   55 Jul 17 15:33 test.sh
 ```
-We can see that we have all rights for this files. However, when we go to another project directory
+We can see that we have all rights for this files. In fact, you can even see the name of your administrator. For me, its **kakadiaris**. For this reason, I have permission to access the kakadiaris server and transfer my datasets. 
+```linux
+[eeplater@sabine ~]$ cd /project/kakadiaris/;ls -l
+total 8
+drwxrwxr-x 28 xxu18    kakadiaris 4096 Jul 11 14:40 Datasets
+drwxr-sr-x  8 eeplater kakadiaris  200 Jul 16 20:51 Erick
+drwxrwxr-x 15 xxu18    kakadiaris  226 May  9 16:34 Experiments
+-rw-rw-r--  1 xxu18    kakadiaris  217 Feb 28  2018 README.md
+drwxr-sr-x  3 ywu35    kakadiaris   28 Feb 18  2018 users
 ```
-project directory
+However, when I try to access someone elses directory, you will get this followin error
+```linux
+cd ..; cd amritkar/
+-bash: cd: amritkar/: Permission denied
 ```
+
 
 One more thing that will save you much time is to be very wary on your memory limits. Although the cluster is ginormous, remember that its made to handle the request of hundreds of students. 
 
@@ -117,7 +129,18 @@ Therefore, its a good idea to check by using
 We see that actually, I am at full capacity with my home directory. 
 It is crucial to know that most home spaces will not have enough storage to transport large datasets that are  20G >. For this reason, you will have to use the directory given to your particular administrator. 
 
+On my administrator's directory, here are the memory limits:
+```linux
+[eeplater@sabine kakadiaris]$ df -h | grep kaka
+nfs-4-2-ib0:/export/project/kakadiaris       10T  2.8T  7.3T  28% /project/kakadiaris
+```
+We can see that we have **much more data** in my administrators directory. Therefore, this directory is where all the heavy duty datasets are stored in.
+
 Once this is done and we are ready to use the magical powers of the cluster, we first need to make a **request** for its resources (remember, hundreds of others will probably be tring to use the same resources).
+
+Although you can find many examples of requesting resources using the bash method, I generally prefer to use the **interactive method**.
+
+
 
 
 
