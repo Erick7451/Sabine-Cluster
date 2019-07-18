@@ -56,7 +56,7 @@ Now, we can see that we have ```linux sinfo | sort -k1,1 -u | wc -l n``` n parti
 PARTITION    AVAIL  TIMELIMIT  NODES  STATE NODELIST
 batch*          up 14-00:00:0      1 drain* compute-1-23
 ```
-Now, this partition, **batch** is **up** and runnng, has a time limit of 14 hours, 1 node (as you can see, nodelist shows that this is node 23 from compute-1), and is in a state of drain*.
+Now, this partition, **batch** is **up** and runnng, has a maximum time limit of 14 days, 1 node (as you can see, nodelist shows that this is node 23 from compute-1), and is in a state of drain*, which means that it is currently unavailable.
 
 We might scrach our heads a little in what this partition actually means, but all we have to do is search for information 
 ```linux
@@ -81,26 +81,40 @@ From reading this, we can immediately gain some insights about this partition:
 2. There are no exlusive users that can use this partition
 3. A user can request all nodes and cpus of partition
 
-Of coarse, there is more information in there, but this will suffice for an introduction. Notice that without the grep, information about all partitions is show and their defaults and restrictions.
+Of coarse, there is more information in there, but this will suffice for an introduction. Notice that without the grep, information about all partitions will show along with their defaults and restrictions.
 
 Now that we have some rudimentary knowledge into the clusters partitions and restrictions, lets head into our own department. 
 
 Once you log in to the cluster using 
 ```linux
-ssh eeplater@sabine.cacds.uh.edu
+ssh your_name@sabine.cacds.uh.edu
 ```
 and entering your password, you will end up in your home directory. 
 
-In this directory, you can basically do whatever you want. However, be very wary on your memory limits. Although the cluster is ginormous, remember that its made to handle the request of hundreds of students. 
+In this directory, you can basically do whatever you want. We can look at our rights by doing 
+```linux
+[eeplater@sabine ~]$ ls -l
+total 24
+drwxr-xr-x 3 eeplater kakadiaris 8192 Jul 14 12:12 log
+drwxr-xr-x 8 eeplater kakadiaris  162 Jul 16 20:51 Python_Scripts
+drwxr-xr-x 2 eeplater kakadiaris    6 Jun 25 11:02 scr
+-rw-r--r-- 1 eeplater kakadiaris   59 Jun 25 15:23 setup.sh
+-rw-r--r-- 1 eeplater kakadiaris   48 Jul 11 20:43 startup.sh
+-rw-r--r-- 1 eeplater kakadiaris   55 Jul 17 15:33 test.sh
+```
+We can see that we have all rights for this files. However, when we go to another project directory
+```
+project directory
+```
+
+One more thing that will save you much time is to be very wary on your memory limits. Although the cluster is ginormous, remember that its made to handle the request of hundreds of students. 
 
 Therefore, its a good idea to check by using
-'''linux
-df -h
-```
-or
 ```linux
-free -mh
+[eeplater@sabine ~]$ df -h | grep eepla
+/dev/mapper/sabine_storage-eeplater          10G   10G  1.5M 100% /home/eeplater
 ```
+We see that actually, I am at full capacity with my home directory. 
 It is crucial to know that most home spaces will not have enough storage to transport large datasets that are  20G >. For this reason, you will have to use the directory given to your particular administrator. 
 
 Once this is done and we are ready to use the magical powers of the cluster, we first need to make a **request** for its resources (remember, hundreds of others will probably be tring to use the same resources).
@@ -109,11 +123,3 @@ Once this is done and we are ready to use the magical powers of the cluster, we 
 
 
 
-
-We will take a look at UH's Sabine cluster to make an example 
-
-First, most clusters today operate on Slurm, which is a task scheduler used to manage the cluster. It is helpful to think of a cluster as an interconnected network of many computers functioning as one. 
-
-![](https://ucdavis-bioinformatics-training.github.io/2017-June-RNA-Seq-Workshop/monday/cluster_diagram.png)
-
-The above image represents 
