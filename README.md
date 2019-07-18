@@ -140,9 +140,47 @@ Once this is done and we are ready to use the magical powers of the cluster, we 
 
 Although you can find many examples of requesting resources using the bash method, I generally prefer to use the **interactive method**.
 
+Lets seen an example:
+```linux
+[eeplater@sabine ~]$ srun -A kakadiaris -t 24:00:00 -n 1 -p gpu --gres=gpu:2 --pty /bin/bash -l
+[eeplater@compute-0-36 ~]$
+```
+Now, you can see that the front header changed from **sabine** to **compute-0-36** which tells me that I am on the first partition batch and am using node 36. Now, just to make sure we actually have two gpus, lets check it with pytorch
+```linux
+[eeplater@compute-0-36 ~]$ module add Anaconda3
+[eeplater@compute-0-36 ~]$ python3
+Python 3.6.8 |Anaconda custom (64-bit)| (default, Dec 30 2018, 01:22:34)
+[GCC 7.3.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import torch
+>>> torch.cuda.device_count()
+2
+```
+Perfect! We have everything set up and ready to go. However, what if you want to terminate the use of the cluster earlier?
 
+First, lets find out where we are with ```linux; squeue```. If you read the tutorial, you know that this command finds all the requests that the cluster is currently handling. Lets see ours.
 
+```linux
+[eeplater@compute-0-36 ~]$ squeue | (read -r; printf '%s\n' "$REPLY"; grep eeplater)
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+           1509684       gpu     bash eeplater  R       7:39      1 compute-0-36
+```
+Now, we see our **Job ID** along with the partition,name, user, status, time, nodes, and nodelist. 
 
+Now, we can cancel our current resources by using **scancel JOB_ID**. Lets try it:
+```linux
+[eeplater@compute-0-36 ~]$ scancel 1509684
+srun: Force Terminated job 1509684
+[eeplater@compute-0-36 ~]$ srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: error: compute-0-36: task 0: Killed
+[eeplater@sabine ~]$
+```
+Now, if we go back and check, we should not be able to see our name anymore (unless we have more than one job running)
+```linux
+[eeplater@sabine ~]$ squeue | grep eeplater
+[eeplater@sabine ~]$
+```
 
+Sweet! 
 
 
