@@ -64,7 +64,7 @@ short-gen10     up    4:00:00      7    mix compute-3-[20-22],compute-4-[4-5,10-
 volta           up 4-00:00:00      2    mix compute-4-[0-1]
 ```
 
-woihala! Much better. One thing I did not mention at the beginning is that this tutorial should teach some very useful commands on linux.
+Voila! Much better. One thing I did not mention at the beginning is that this tutorial should teach some very useful commands on linux.
 
 Now, lets calculate how many unique clusters we have
 ```linux 
