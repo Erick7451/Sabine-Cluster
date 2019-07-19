@@ -1,11 +1,17 @@
 # Sabine-Cluster
-What to know before working with UH Cluster
+What to know before working with a Cluster that operates on Slurm.
 
-At first, working with a cluster can be a little bit overwhelming if it is your first time. However, once you break down its infrastructure, logic, and scheduling, it becomes one of the greatest tools for a Data Scientist
+At first, working with a cluster can be a little overwhelming. However, once you break down its infrastructure, logic, and scheduling, it becomes one of the greatest tools for a Data Scientist!
 
-Today, we will explore the Sabine cluster to get a better understanding of what a Cluster is about.
+Before you begin (and to get the most out of this tutorial, I would highly recommend to read the article shown below if this is your first time learning about Slurm, its purposes, and operations.
 
-First, we will use the command **sinfo** to get more information about the partitions of the cluster
+https://support.ceci-hpc.be/doc/_contents/QuickStart/SubmittingJobs/SlurmTutorial.html
+
+Now! Lets get started.
+
+Today, we will explore the University of Houston's Sabine cluster to get a peak of its power.
+
+First, we will use the command **sinfo** to get more information about the partitions of the cluster.
 
 ```linux
 [eeplater@sabine ~]$ sinfo
@@ -41,27 +47,43 @@ long-gen10      up 14-00:00:0     32  alloc compute-3-[0-3,5-10,12,14,18-21,23-2
 long-gen10      up 14-00:00:0      1   idle compute-3-28
 ```
 
-WOAH! Okay! This might want to make you completely ignore this tutorial, but stay with me and you will see that this is very interesting knowledge once we break it down. 
+WOAH! Okay! This might look daunting, but stay with me and you will see that this is very interesting knowledge once we break it down. 
 
 The first column states all the different partitions that the Sabine cluster has. To take a better look, lets grab an example of each
 ```linux
-sinfo | (read -r; printf "%s\n" "$REPLY"; sort)
-output
+[eeplater@sabine ~]$ sinfo | (read -r; echo $REPLY; sort -k1,1 -u)
+PARTITION AVAIL TIMELIMIT NODES STATE NODELIST
+batch*          up 14-00:00:0      1 drain* compute-1-23
+gpu             up 4-00:00:00      8   idle compute-0-[36-43]
+long            up 14-00:00:0     34    mix compute-0-[0,3-4,10,12,14,18-19,25-26,29-30,33-35],compute-2-[1,5,7,9,17,19,21-23,27,29,38-44,46]
+long-gen10      up 14-00:00:0      5    mix compute-3-[20-22],compute-4-[4-5]
+medium          up 7-00:00:00      1 drain* compute-1-23
+medium-gen10    up 7-00:00:00      5    mix compute-3-[20-22],compute-4-[4-5]
+short           up    4:00:00      1 drain* compute-1-23
+short-gen10     up    4:00:00      7    mix compute-3-[20-22],compute-4-[4-5,10-11]
+volta           up 4-00:00:00      2    mix compute-4-[0-1]
 ```
 
 woihala! Much better. One thing I did not mention at the beginning is that this tutorial should teach some very useful commands on linux.
 
-Now, we can see that we have ```linux sinfo | sort -k1,1 -u | wc -l n``` n partitions on the cluster. Now, if you read the tutorial above, you know that a partition is a set of nodes for a particular job. Now, while most of the columns are very self-explanatory, lets take a look at the first row:
+Now, lets calculate how many unique clusters we have
+```linux 
+[eeplater@sabine ~]$ NUM=$(sinfo | sort -k1,1 -u | wc -l); echo $((NUM -1))
+9
+```
+Cool! We have 9 unique partitions on our cluster. 
+
+Now, while most of the columns are very self-explanatory, lets take a look at the first row:
 ```linux
-PARTITION    AVAIL  TIMELIMIT  NODES  STATE NODELIST
+[eeplater@sabine ~]$ sinfo | (read -r; echo $REPLY; sort -k1,1 -u | head -1)
+PARTITION AVAIL TIMELIMIT NODES STATE NODELIST
 batch*          up 14-00:00:0      1 drain* compute-1-23
 ```
-Now, this partition, **batch** is **up** and runnng, has a maximum time limit of 14 days, 1 node (as you can see, nodelist shows that this is node 23 from compute-1), and is in a state of drain*, which means that it is currently unavailable.
+Now, this partition, **batch** is **up** and runnng, has a maximum **time limit** of 14 days: 0 hours: 0 minutes: 0 seconds, 1 node (as you can see, nodelist shows that this is node 23 from compute-1), and is in a **state** of drain*, which means that it is currently unavailable.
 
-We might scrach our heads a little in what this partition actually means, but all we have to do is search for information 
+We might scratch our heads a little in what this partition actually entails, however, all we have to do is dig-in for more information using **scontrol show partition**. 
 ```linux
-scontrol show partition | grep batch
-
+[eeplater@sabine ~]$ scontrol show partition | head -12
 PartitionName=batch
    AllowGroups=ALL AllowAccounts=ALL AllowQos=ALL
    AllocNodes=ALL Default=YES QoS=N/A
@@ -83,7 +105,7 @@ From reading this, we can immediately gain some insights about this partition:
 
 Of coarse, there is more information in there, but this will suffice for an introduction. Notice that without the grep, information about all partitions will show along with their defaults and restrictions.
 
-Now that we have some rudimentary knowledge into the clusters partitions and restrictions, lets head into our own department. 
+Now that we have some fundamental knowledge into the clusters partitions and restrictions, lets head into our own department. 
 
 Once you log in to the cluster using 
 ```linux
