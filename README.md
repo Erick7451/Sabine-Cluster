@@ -1,5 +1,5 @@
 # Sabine-Cluster
-What to know before working with a Cluster that operates on Slurm.
+What to know before working with a Cluster whose jobs are scheduled using Slurm.
 
 At first, working with a cluster can be a little overwhelming. However, once you break down its infrastructure, logic, and scheduling, it becomes one of the greatest tools for a Data Scientist!
 
