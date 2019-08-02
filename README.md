@@ -143,12 +143,9 @@ From this, we can immediately see that:
 
 Are all different.
 
-Now that we have some fundamental knowledge into the clusters partitions, lets head into our own account. 
-```linux
-ssh your_name@sabine.cacds.uh.edu
-```
+Now that we have some fundamental knowledge into the clusters partitions, let's quickly take a look at our permissions and memory limits.
 
-In your home directory, you have all rights. However, once you venture out of your directory, restrictions become very strict:
+In your home directory, you have all rights. 
 ```linux
 [eeplater@sabine ~]$ ls -l
 total 24
@@ -159,7 +156,7 @@ drwxr-xr-x 2 eeplater kakadiaris    6 Jun 25 11:02 scr
 -rw-r--r-- 1 eeplater kakadiaris   48 Jul 11 20:43 startup.sh
 -rw-r--r-- 1 eeplater kakadiaris   55 Jul 17 15:33 test.sh
 ```
-We can see that we have all rights for this files. In fact, you can even see the name of your administrator. For me, its **kakadiaris**. For this reason, I have permission to access the kakadiaris server and transfer my datasets. 
+In fact, you can even see the name of your administrator. For me, its **kakadiaris**, and for this reason, I have permission to access the server and transfer my datasets (keep in mind that restrictions become very strict once you venture of your home or administrative directory). 
 ```linux
 [eeplater@sabine ~]$ cd /project/kakadiaris/;ls -l
 total 8
@@ -169,69 +166,32 @@ drwxrwxr-x 15 xxu18    kakadiaris  226 May  9 16:34 Experiments
 -rw-rw-r--  1 xxu18    kakadiaris  217 Feb 28  2018 README.md
 drwxr-sr-x  3 ywu35    kakadiaris   28 Feb 18  2018 users
 ```
-
-
-One more thing that will save you much time is to be very wary on your memory limits. Although the cluster is ginormous, remember that its made to handle requests from hundreds of students. 
-
-Therefore, its a good idea to check your limits with:
+This is crucial as your home directory will have very limited amounts of data. For me, I began with 10G and therefore I quickly had to store my datasets in the administrative directory as it will have much more data
 ```linux
 [eeplater@sabine ~]$ df -h | grep eepla
 /dev/mapper/sabine_storage-eeplater          10G   10G  1.5M 100% /home/eeplater
 ```
-We see that actually, I am at full capacity with my home directory.
-Therefore, to work with big data, you must use the directory attached with your administrator.
 
-On my administrator's directory, here are the memory limits:
-```linux
-[eeplater@sabine kakadiaris]$ df -h | grep kaka
-nfs-4-2-ib0:/export/project/kakadiaris       10T  2.8T  7.3T  28% /project/kakadiaris
-```
-We can see that we have **much more data** in my administrators directory. Therefore, this directory is where all the heavy duty datasets are stored in.
-
-Once this is done and we are ready to use the magical powers of the cluster, we first need to make a **request** for its resources (remember, hundreds of others will probably be tring to use the same resources).
+Therefore, now that we know of our home and administrative directory, we can begin using the magical powers of our cluster. First, we need to make a **request** for its resources (remember, hundreds of others will probably be tring to use the same resources).
 
 Although you can find many examples of requesting resources using the bash method, I generally prefer to use the **interactive method**.
 
 Lets seen an example:
 ```linux
 [eeplater@sabine ~]$ srun -A kakadiaris -t 24:00:00 -n 1 -p gpu --gres=gpu:2 --pty /bin/bash -l
-[eeplater@compute-0-36 ~]$
 ```
-Now, to get a better understanding of these symbols, lets look at the symbols.
-```linux
-[eeplater@sabine ~]$ srun --help
-Usage: srun [OPTIONS...] executable [args...]
+This will:
+1. Charge request to your **a**dmnistrators account
+2. Grant resources for **t**ime-limit of 24 hours
+3. Use 1 **n**ode
+4. Request gpu **p**artition
+5. Number of **gpu**s (2)
+6. Run task on pseudo terminal (**--pty**)
+7. Prepend task number to **l**ines of stdout
 
-Parallel run options:
-  -A, --account=name          charge job to specified account
-      --acctg-freq=<datatype>=<interval> accounting and profiling sampling
-                              intervals. Supported datatypes:
-                              task=<interval> energy=<interval>
-                              network=<interval> filesystem=<interval>
-      --bb=<spec>             burst buffer specifications
-      --bbf=<file_name>       burst buffer specification file
-      --bcast=<dest_path>     Copy executable file to compute nodes
-      --begin=time            defer job until HH:MM MM/DD/YY
-  -c, --cpus-per-task=ncpus   number of cpus required per task
-      --checkpoint=time       job step checkpoint interval
-      --checkpoint-dir=dir    directory to store job step checkpoint image
-                              files
-      --comment=name          arbitrary comment
-      --compress[=library]    data compression library used with --bcast
-      --cpu-freq=min[-max[:gov]] requested cpu frequency (and governor)
+I only listed some of the commands, however, the list is much much longer and you can find some really cool commands such as sending emails to yourself once permission has been granted! 
 
-  -n, --ntasks=ntasks         number of tasks to run
-      --nice[=value]          decrease scheduling priority by value
-      --ntasks-per-node=n     number of tasks to invoke on each node
-  -N, --nodes=N               number of nodes on which to run (N = min[-max])
-
-  -p, --partition=partition   partition requested
-
-```
-In the above, I only listed some of the commands, however, the list is much much longer and you can find some really cool commands such as sending emails to yourself once permission has been granted! 
-
-
-Now, you can see that the front header changed from **sabine** to **compute-0-36** which tells me that I am on the first partition batch and am using node 36. Now, just to make sure we actually have two gpus, lets check it with pytorch
+Once our request has been granted, our front header will change from **sabine** to **compute-0-36** which tells me that I am using node 36. Now, just to make sure we actually have two gpus, lets check it with pytorch
 ```linux
 [eeplater@compute-0-36 ~]$ module add Anaconda3
 [eeplater@compute-0-36 ~]$ python3
@@ -242,24 +202,18 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> torch.cuda.device_count()
 2
 ```
-Perfect! We have everything set up and ready to go. However, what if you want to terminate the use of the cluster earlier?
-
-First, lets find out where we are with ```linux; squeue```. If you read the tutorial, you know that this command finds all the requests that the cluster is currently handling. Lets see ours.
-
+Perfect! We have everything set up and ready to go. However, what if you want to terminate the use of the cluster earlier? To do this, we must first learn our specific **JOBID** that is given to each request.
 ```linux
 [eeplater@compute-0-36 ~]$ squeue | (read -r; echo "$REPLY"; grep eeplater)
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
            1509684       gpu     bash eeplater  R       7:39      1 compute-0-36
 ```
-Now, we see our **Job ID** along with the partition,name, user, status, time, nodes, and nodelist. 
-
-Now, we can cancel our current resources by using **scancel JOB_ID**. Lets try it:
+Now that we have our **JOBID**, we can cancel our current resources by using **scancel JOB_ID**
 ```linux
 [eeplater@compute-0-36 ~]$ scancel 1509684
 srun: Force Terminated job 1509684
 [eeplater@compute-0-36 ~]$ srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
 srun: error: compute-0-36: task 0: Killed
-[eeplater@sabine ~]$
 ```
 Now, if we go back and check, we should not be able to see our name anymore (unless we have more than one job running)
 ```linux
@@ -274,13 +228,13 @@ In the above example, we used the partition **gpu**. However, look what happens 
 srun: error: Unable to allocate resources: Requested node configuration is not available
 [eeplater@sabine ~]$
 ```
-Look how we get an error now. If you see this, know that the partition does **not** have the resources you are requesting. Our partition gpu only has two gpus and therefore cannot grant our requests of 4 gpus. However, lets use a more powerful cluster
+Look how we get an error now. If you encounter such error, know that the partition does **not** have the resources you are requesting. Our partition (**gpu**) only has two gpus and therefore cannot grant our requests of 4 gpus. However, lets use a more powerful parition
 ```linux
 [eeplater@sabine ~]$ srun -A kakadiaris -t 24:00:00 -n 28 -p volta --gres=gpu:8 --pty /bin/bash -l
 [eeplater@compute-4-2 ~]$ python3 -c "import torch; print(torch.cuda.device_count())"
 8
 ```
-Boom! Its that easy, we now have **8 GPUs**! Time to start training some very deep learning models!
+Boom! It's that easy. We now have **8 GPUs**! Time to start training some very deep learning models!
 
 Okay, this should give you a very good base start to start on your cluster adventure!
 Have fun with the cluster and remember, always strive to learn more! 
