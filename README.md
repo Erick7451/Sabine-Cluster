@@ -1,4 +1,4 @@
-# Sabine-Cluster
+# Sabine-By-Example
 Today we are going to take a tour around the operations, functions, and logic of the University of Houston's Sabine Cluster.
 
 At first, working with a cluster can be a little overwhelming. However, once you break down its infrastructure, logic, and scheduling, it becomes one of the greatest tools for a Data Scientist!
