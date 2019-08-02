@@ -49,7 +49,7 @@ long-gen10      up 14-00:00:0      1   idle compute-3-28
 
 WOAH! Okay! This might look like a lot, however, stay with me and you will see that this is very simple information.
 
-The first column states all the different partitions that the Sabine cluster has. To take a better look, lets grab an example of each
+The first column states all the different partitions that the Sabine cluster has. To get a better look, lets grab an example of each
 ```linux
 [eeplater@sabine ~]$ sinfo | (read -r; echo $REPLY; sort -k1,1 -u)
 PARTITION AVAIL TIMELIMIT NODES STATE NODELIST
@@ -71,7 +71,11 @@ Voila! Much better. From this, we can see that our Sabine Cluster has nine diffe
 PARTITION AVAIL TIMELIMIT NODES STATE NODELIST
 batch*          up 14-00:00:0      1 drain* compute-1-23
 ```
-Now, this partition, **batch** is **up** and runnng, has a maximum **time limit** of 14 days: 0 hours: 0 minutes: 0 seconds, 1 node (as you can see, **nodelist** shows that this is node 23 from compute-1), and is in a **state** of drain*, which means that it is currently unavailable.
+Now, 
+1. **batch** is **up** and runnng
+2. Has maximum **time limit** of 14 days: 0 hours: 0 minutes: 0 seconds
+3. Has 1 node (as you can see, **nodelist** shows that this is node 23 from compute-1)
+4. Is in a **state** of drain*, which means that it is currently unavailable.
 
 Now that we know some properties, what makes this partition unique from the others? Say volta?
 
@@ -106,7 +110,7 @@ PartitionName=volta
 
 ```
 
-if we look hard enough, we can see some differences such as the **TotalCPUs**, however, let's make the differences more clear by using process substitution
+if we look hard enough, we can see some differences such as the **TotalCPUs**, however, let's make the differences more apparent by using **process substitution**
 ```linux
 [eeplater@sabine ~]$ diff <(scontrol show partition | grep 'PartitionName=batch' -A 11) <(scontrol show partition | grep 'PartitionName=volta' -A 11)
 1c1
@@ -181,13 +185,13 @@ Lets seen an example:
 [eeplater@sabine ~]$ srun -A kakadiaris -t 24:00:00 -n 1 -p gpu --gres=gpu:2 --pty /bin/bash -l
 ```
 This will:
-1. Charge request to your **a**dmnistrators account
-2. Grant resources for **t**ime-limit of 24 hours
-3. Use 1 **n**ode
-4. Request gpu **p**artition
-5. Number of **gpu**s (2)
+1. Charge request to your admnistrators account (**-A**)
+2. Grant resources for time-limit of 24 hours (**-t**)
+3. Use 1 node (**-n**)
+4. Request gpu partition (**-p**)
+5. Number of gpus (**--gres=gpu**)
 6. Run task on pseudo terminal (**--pty**)
-7. Prepend task number to **l**ines of stdout
+7. Prepend task number to lines of stdout (**-l**)
 
 I only listed some of the commands, however, the list is much much longer and you can find some really cool commands such as sending emails to yourself once permission has been granted! 
 
