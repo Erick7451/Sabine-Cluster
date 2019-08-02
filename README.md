@@ -1,5 +1,5 @@
 # Sabine-Cluster
-What to know before working with a Cluster whose jobs are scheduled using Slurm.
+Today we are going to take a tour around the operations, functions, and logic of the University of Houston's Sabine Cluster.
 
 At first, working with a cluster can be a little overwhelming. However, once you break down its infrastructure, logic, and scheduling, it becomes one of the greatest tools for a Data Scientist!
 
@@ -9,9 +9,9 @@ https://support.ceci-hpc.be/doc/_contents/QuickStart/SubmittingJobs/SlurmTutoria
 
 Now! Lets get started.
 
-Today, we will explore the University of Houston's Sabine cluster to get a peak of its power.
 
-First, we will use the command **sinfo** to get more information about the partitions of the cluster.
+
+First, let's us take a look at the **sinfo** command to attain more information of the cluster's partition.
 
 ```linux
 [eeplater@sabine ~]$ sinfo
@@ -47,7 +47,7 @@ long-gen10      up 14-00:00:0     32  alloc compute-3-[0-3,5-10,12,14,18-21,23-2
 long-gen10      up 14-00:00:0      1   idle compute-3-28
 ```
 
-WOAH! Okay! This might look daunting, but stay with me and you will see that this is very interesting knowledge once we break it down. 
+WOAH! Okay! This might look like a lot, however, stay with me and you will see that this is very simple information.
 
 The first column states all the different partitions that the Sabine cluster has. To take a better look, lets grab an example of each
 ```linux
@@ -64,26 +64,20 @@ short-gen10     up    4:00:00      7    mix compute-3-[20-22],compute-4-[4-5,10-
 volta           up 4-00:00:00      2    mix compute-4-[0-1]
 ```
 
-Voila! Much better. One thing I did not mention at the beginning is that this tutorial should teach some very useful commands on linux.
+Voila! Much better. From this, we can see that our Sabine Cluster has nine different partitions, each with their own unique purpose. To find out more about this, lets analyze the first partition: **batch**
 
-Now, lets calculate how many unique clusters we have
-```linux 
-[eeplater@sabine ~]$ NUM=$(sinfo | sort -k1,1 -u | wc -l); echo $((NUM -1))
-9
-```
-Cool! We have 9 unique partitions on our cluster. 
-
-Now, while most of the columns are very self-explanatory, lets take a look at the first row:
 ```linux
 [eeplater@sabine ~]$ sinfo | (read -r; echo $REPLY; sort -k1,1 -u | head -1)
 PARTITION AVAIL TIMELIMIT NODES STATE NODELIST
 batch*          up 14-00:00:0      1 drain* compute-1-23
 ```
-Now, this partition, **batch** is **up** and runnng, has a maximum **time limit** of 14 days: 0 hours: 0 minutes: 0 seconds, 1 node (as you can see, nodelist shows that this is node 23 from compute-1), and is in a **state** of drain*, which means that it is currently unavailable.
+Now, this partition, **batch** is **up** and runnng, has a maximum **time limit** of 14 days: 0 hours: 0 minutes: 0 seconds, 1 node (as you can see, **nodelist** shows that this is node 23 from compute-1), and is in a **state** of drain*, which means that it is currently unavailable.
 
-We might scratch our heads a little in what this partition actually entails, however, all we have to do is dig-in for more information using **scontrol show partition**. 
+Now that we know some properties, what makes this partition unique from the others? Say volta?
+
+Let's compare these two with **scontrol show partition** command. 
 ```linux
-[eeplater@sabine ~]$ scontrol show partition | head -12
+[eeplater@sabine ~]$ scontrol show partition | grep -E 'batch|volta' -A 11
 PartitionName=batch
    AllowGroups=ALL AllowAccounts=ALL AllowQos=ALL
    AllocNodes=ALL Default=YES QoS=N/A
@@ -96,24 +90,65 @@ PartitionName=batch
    JobDefaults=(null)
    DefMemPerCPU=4096 MaxMemPerNode=UNLIMITED
    TRESBillingWeights=CPU=0.85,Mem=0.0G
+--
+PartitionName=volta
+   AllowGroups=ALL AllowAccounts=ALL AllowQos=ALL
+   AllocNodes=ALL Default=NO QoS=N/A
+   DefaultTime=04:00:00 DisableRootJobs=NO ExclusiveUser=NO GraceTime=0 Hidden=NO
+   MaxNodes=UNLIMITED MaxTime=4-00:00:00 MinNodes=0 LLN=NO MaxCPUsPerNode=UNLIMITED
+   Nodes=compute-4-[0-3]
+   PriorityJobFactor=1 PriorityTier=1 RootOnly=NO ReqResv=NO OverSubscribe=NO
+   OverTimeLimit=NONE PreemptMode=OFF
+   State=UP TotalCPUs=112 TotalNodes=4 SelectTypeParameters=NONE
+   JobDefaults=(null)
+   DefMemPerCPU=4096 MaxMemPerNode=UNLIMITED
+   TRESBillingWeights=CPU=0.85,Mem=0.0G,GRES/gpu=31.0
+
 ```
 
-From reading this, we can immediately gain some insights about this partition:
-1. All accounts are allowed to use this partition
-2. There are no exlusive users that can use this partition
-3. A user can request all nodes and cpus of partition
+if we look hard enough, we can see some differences such as the **TotalCPUs**, however, let's make the differences more clear by using process substitution
+```linux
+[eeplater@sabine ~]$ diff <(scontrol show partition | grep 'PartitionName=batch' -A 11) <(scontrol show partition | grep 'PartitionName=volta' -A 11)
+1c1
+< PartitionName=batch
+---
+> PartitionName=volta
+3c3
+<    AllocNodes=ALL Default=YES QoS=N/A
+---
+>    AllocNodes=ALL Default=NO QoS=N/A
+5,6c5,6
+<    MaxNodes=UNLIMITED MaxTime=14-00:00:00 MinNodes=0 LLN=NO MaxCPUsPerNode=UNLIMITED
+<    Nodes=compute-0-[0-35],compute-1-[0-31],compute-2-[0-47]
+---
+>    MaxNodes=UNLIMITED MaxTime=4-00:00:00 MinNodes=0 LLN=NO MaxCPUsPerNode=UNLIMITED
+>    Nodes=compute-4-[0-3]
+9c9
+<    State=UP TotalCPUs=3248 TotalNodes=116 SelectTypeParameters=NONE
+---
+>    State=UP TotalCPUs=112 TotalNodes=4 SelectTypeParameters=NONE
+12c12
+<    TRESBillingWeights=CPU=0.85,Mem=0.0G
+---
+>    TRESBillingWeights=CPU=0.85,Mem=0.0G,GRES/gpu=31.0
+```
 
-Of coarse, there is more information in there, but this will suffice for an introduction. Notice that without the grep, information about all partitions will show along with their defaults and restrictions.
+Much better.
 
-Now that we have some fundamental knowledge into the clusters partitions and restrictions, lets head into our own department. 
+From this, we can immediately see that:
+1. Default 
+2. Maxtime
+3. TotalCPUs
+4. GRES/gpu
 
-Once you log in to the cluster using 
+Are all different.
+
+Now that we have some fundamental knowledge into the clusters partitions, lets head into our own account. 
 ```linux
 ssh your_name@sabine.cacds.uh.edu
 ```
-and entering your password, you will end up in your home directory. 
 
-In this directory, you can basically do whatever you want. We can look at our rights by doing 
+In your home directory, you have all rights. However, once you venture out of your directory, restrictions become very strict:
 ```linux
 [eeplater@sabine ~]$ ls -l
 total 24
@@ -134,22 +169,17 @@ drwxrwxr-x 15 xxu18    kakadiaris  226 May  9 16:34 Experiments
 -rw-rw-r--  1 xxu18    kakadiaris  217 Feb 28  2018 README.md
 drwxr-sr-x  3 ywu35    kakadiaris   28 Feb 18  2018 users
 ```
-However, when I try to access someone elses directory, you will get this followin error
-```linux
-cd ..; cd amritkar/
--bash: cd: amritkar/: Permission denied
-```
 
 
-One more thing that will save you much time is to be very wary on your memory limits. Although the cluster is ginormous, remember that its made to handle the request of hundreds of students. 
+One more thing that will save you much time is to be very wary on your memory limits. Although the cluster is ginormous, remember that its made to handle requests from hundreds of students. 
 
-Therefore, its a good idea to check by using
+Therefore, its a good idea to check your limits with:
 ```linux
 [eeplater@sabine ~]$ df -h | grep eepla
 /dev/mapper/sabine_storage-eeplater          10G   10G  1.5M 100% /home/eeplater
 ```
-We see that actually, I am at full capacity with my home directory. 
-It is crucial to know that most home spaces will not have enough storage to transport large datasets that are  20G >. For this reason, you will have to use the directory given to your particular administrator. 
+We see that actually, I am at full capacity with my home directory.
+Therefore, to work with big data, you must use the directory attached with your administrator.
 
 On my administrator's directory, here are the memory limits:
 ```linux
