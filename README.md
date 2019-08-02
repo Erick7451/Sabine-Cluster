@@ -145,7 +145,7 @@ From this, we can immediately see that:
 3. TotalCPUs
 4. GRES/gpu
 
-Are all different.
+Parameters are all different.
 
 Now that we have some fundamental knowledge into the clusters partitions, let's quickly take a look at our permissions and memory limits.
 
